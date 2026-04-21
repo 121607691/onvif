@@ -68,10 +68,11 @@
     </plugins>
   </reporting>
 
+  <!-- 多模块 deploy 时统一落到仓库根目录，便于复制到私服或共享给下游 -->
   <distributionManagement>
     <repository>
-      <id>internal</id>
-      <url>file://${project.build.directory}/mvn-repo</url>
+      <id>onvif-local-repo</id>
+      <url>file://${maven.multiModuleProjectDirectory}/dist/mvn-repo</url>
     </repository>
   </distributionManagement>
 

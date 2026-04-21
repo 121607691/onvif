@@ -16,9 +16,9 @@ import org.oasis_open.docs.wsn.t_1.TopicSetType;
 
 
 /**
- * <p>Java class for anonymous complex type.
+ * <p>anonymous complex type的 Java 类。
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>以下模式片段指定包含在此类中的预期内容。
  * 
  * <pre>
  * &lt;complexType&gt;
@@ -116,7 +116,7 @@ public class GetEventPropertiesResponse {
     }
 
     /**
-     * Sets the value of the fixedTopicSet property.
+     * 设置fixedTopicSet属性的值。
      * 
      */
     public void setFixedTopicSet(boolean value) {
@@ -136,7 +136,7 @@ public class GetEventPropertiesResponse {
     }
 
     /**
-     * Sets the value of the topicSet property.
+     * 设置topicSet属性的值。
      * 
      * @param value
      *     allowed object is
@@ -155,7 +155,6 @@ public class GetEventPropertiesResponse {
      * </pre>
      * 
      *                                     The following TopicExpressionDialects are mandatory for an ONVIF compliant device :
-     *                                     
      * <pre>
      * &lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ul xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tev="http://www.onvif.org/ver10/events/wsdl" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:wsntw="http://docs.oasis-open.org/wsn/bw-2" xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:xs="http://www.w3.org/2001/XMLSchema" type="disc"&gt;&lt;li&gt;http://docs.oasis-open.org/wsn/t-1/TopicExpression/Concrete&lt;/li&gt;&lt;li&gt;http://www.onvif.org/ver10/tev/topicExpression/ConcreteSet.&lt;/li&gt;&lt;/ul&gt;
      * </pre>
