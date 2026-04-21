@@ -1,42 +1,96 @@
-# Java ONVIF (Open Network Video Interface Forum)
+# Java ONVIF
 
-ONVIF is a community to standardize communication between IP-based security products (like cameras).
+This repository provides a Java ONVIF foundation library intended to be packaged
+and consumed as a dependency by other projects.
 
-This project aims to improve [https://github.com/milg0/onvif-java-lib](https://github.com/milg0/onvif-java-lib).  
+The project is organized as a Maven multi-module build:
 
-I've tried to convice its author to use to my code but it seems we have different objectives: my goal is to create a project that focus on the funny part of the development of an ONVIF application, **keeping the interaction with the WS as simple as possible** and delege that annoying part to Apache CXF in order to not waste the developer time in writing (and MAINTAINING) code that interacts with ONVIF web services.  
+- `onvif-ws-client`: generated and maintained SOAP client bindings
+- `onvif-java`: higher-level Java wrapper APIs built on top of the bindings
 
-My wish is to help other developers willing to contribute to an enterprise-level Java library for ONVIF devices.
+The main goal is to keep ONVIF web service interaction behind Apache CXF and a
+small Java-facing API surface so downstream projects can focus on application
+logic instead of maintaining SOAP integration code.
 
-# Apported improvements
+## Repository layout
 
-- Project **mavenization** and **modularization** (separation between Java stubs and application) and 
-- WS tests generation using Apache CXF maven plugin (declaring the specific Onvif specification of each wsdl)
-- maintainability and extendability of the overall code
-- Separation of Test/examples from other code
+```text
+onvif/
+|- onvif-ws-client/
+|- onvif-java/
+|- examples/
+|  \- discovery/
+|- docs/
+```
 
-# Rebuilding WS stubs
+`examples/` contains reference sample code only. Example sources are not part of
+the published library API surface and should not be treated as stable contracts.
 
-If you need to change the list of managed WSDLs (in onvif/onvif-ws-tests/src/main/resources/wsdl) and thus you need to regenerate the WS Java stubs using the [Apache CXF codegen maven plugin](http://cxf.apache.org/docs/maven-cxf-codegen-plugin-wsdl-to-java.html), you need to go through the following steps:
+## Build and test
 
-1. **Download Onvif WSDLs** to onvif/onvif-ws-tests/src/main/resources/wsdl appending the version before the .wsdl suffix.
- For example, from main dir (onvif) use you can run the following shell commmand:<br>
+Run the full test suite:
 
-`wget http://www.onvif.org/onvif/ver10/device/wsdl/devicemgmt.wsdl onvif-ws-tests/src/main/resources/wsdl/devicemgmt_2.5.wsdl` 
+```bash
+mvn -q test
+```
 
-1. **Update WSDLLocations constants (if needed)** within class  *de.onvif.utils.WSDLLocations* (module onvif-java)
-2. **Add required url-rewriting rules (if needed)** to onvif/onvif-ws-tests/src/main/resources/wsdl/jax-ws-catalog.xml
-3. Delete old Java classes in onvif/onvif-ws-tests/src/main/java
-4. **Run the class generation command**: decomment goal and phase of cxf-codegen-plugin in onvif-ws-tests pom.xml and run ```mvn clean install```
-5. To see how to properly add a new ONVIF service to OnvifDevice look into OnvifDevice.init()
+Build the modules:
 
-# TODO
+```bash
+mvn -q package
+```
 
-My next goals are:
+The root `distributionManagement` is configured to publish artifacts into the
+repository-local directory below:
 
-1. Create an active community of enthusiastic developers (the crazier you are, the better)
-2. Write a more comprehensive examples (e.g. subscribe to an event notification, use I/O ports, etc...)
-3. Create consistent Onvif specifications tags (at least for onvif-ws-tests). For example: 2.4, 2.5, etc...
-4. Fix WS-Discovery example (with my camera it doesn't work at all)
-5. Write a simple UI to test the device functionalities
-6. Fix offline mode (xml files in *local* folder)
+```text
+dist/mvn-repo
+```
+
+To produce the local Maven repository layout:
+
+```bash
+mvn -q deploy
+```
+
+## Published artifacts
+
+The project is intended to be consumed through these module artifacts:
+
+- `org.onvif:onvif-ws-client`
+- `org.onvif:onvif-java`
+
+`onvif-java` also attaches a `with-dependencies` shaded jar for command-line or
+standalone integration scenarios, while the main artifact remains the thin jar
+for regular Maven dependency usage.
+
+## Examples
+
+Discovery examples live in [examples/discovery/README.md](examples/discovery/README.md).
+
+They are useful for integration checks and local experimentation, but they are
+kept separate from the core library on purpose:
+
+- they are not published as Maven modules
+- they may evolve with repository structure
+- they should not be imported as production dependencies
+
+## Regenerating WSDL bindings
+
+If you need to refresh generated bindings after updating managed WSDL files:
+
+1. Download the required ONVIF WSDLs into the resource directory used by
+   `onvif-ws-client`.
+2. Update any related WSDL location constants if the service catalog changes.
+3. Adjust catalog rewriting rules if new remote imports are introduced.
+4. Regenerate bindings through the configured CXF build flow.
+5. Re-run tests before committing regenerated output.
+
+## Project direction
+
+The repository remains focused on:
+
+- maintainable ONVIF Java integration
+- generated client bindings separated from wrapper logic
+- dependency-friendly packaging for downstream projects
+- a small set of reference examples kept outside the published modules
