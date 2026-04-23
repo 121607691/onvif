@@ -70,6 +70,7 @@
 
   </dependencies>
   <build>
+    <sourceDirectory>${basedir}/generated/src/main/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.cxf</groupId>
@@ -84,11 +85,7 @@
             </goals>
             <configuration>
               <wsdlRoot>${basedir}/src/main/resources/wsdl</wsdlRoot>
-              <sourceRoot>${basedir}/src/main/java</sourceRoot>
-              <!--
-                // TODO: Consider moving generated sources to separate folder and excluse from source control.
-                            <sourceRoot>${basedir}/generated/src/main/java</sourceRoot>
-              -->
+              <sourceRoot>${basedir}/generated/src/main/java</sourceRoot>
               <includes>
                 <include>*.wsdl</include>
               </includes>
