@@ -59,7 +59,7 @@ public final class SimpleDiscovery {
             + "xmlns=\"http://www.w3.org/2003/05/soap-envelope\">\n"
             + "  <Header>\n"
             + "    <wsa:MessageID xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\">\n"
-            + "      uuid:" + UUID.randomUUID() + "\n"
+            + "      urn:uuid:" + UUID.randomUUID() + "\n"
             + "    </wsa:MessageID>\n"
             + "    <wsa:To xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\">\n"
             + "      urn:schemas-xmlsoap-org:ws:2005:04:discovery\n"
@@ -116,9 +116,8 @@ public final class SimpleDiscovery {
     }
 
     private static void probeFromAddress(InetAddress localAddress, Set<String> deviceUrls) {
-        try (DatagramSocket receiveSocket = new DatagramSocket(0, localAddress);
-             DatagramSocket sendSocket = new DatagramSocket()) {
-            receiveSocket.setSoTimeout(DISCOVERY_TIMEOUT_MS);
+        try (DatagramSocket socket = new DatagramSocket(0, localAddress)) {
+            socket.setSoTimeout(DISCOVERY_TIMEOUT_MS);
 
             byte[] probeData = buildProbeMessage().getBytes(StandardCharsets.UTF_8);
             DatagramPacket packet = new DatagramPacket(
@@ -127,14 +126,14 @@ public final class SimpleDiscovery {
                 InetAddress.getByName(DISCOVERY_ADDRESS),
                 DISCOVERY_PORT
             );
-            sendSocket.send(packet);
+            socket.send(packet);
 
             long deadline = System.currentTimeMillis() + DISCOVERY_TIMEOUT_MS;
             while (System.currentTimeMillis() < deadline) {
                 byte[] buffer = new byte[4096];
                 DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
                 try {
-                    receiveSocket.receive(responsePacket);
+                    socket.receive(responsePacket);
                     String response = new String(
                         responsePacket.getData(),
                         0,
@@ -153,12 +152,22 @@ public final class SimpleDiscovery {
 
     private static void extractXAddrs(String response, Set<String> deviceUrls) {
         int start = response.indexOf("<XAddrs>");
+        int startTagLength = "<XAddrs>".length();
+        if (start == -1) {
+            start = response.indexOf("<wsdd:XAddrs>");
+            startTagLength = "<wsdd:XAddrs>".length();
+        }
+
         int end = response.indexOf("</XAddrs>");
+        if (end == -1) {
+            end = response.indexOf("</wsdd:XAddrs>");
+        }
+
         if (start == -1 || end == -1 || end <= start) {
             return;
         }
 
-        String xaddrs = response.substring(start + "<XAddrs>".length(), end);
+        String xaddrs = response.substring(start + startTagLength, end);
         String[] urls = xaddrs.trim().split("\\s+");
         for (String url : urls) {
             if (!url.isEmpty()) {
