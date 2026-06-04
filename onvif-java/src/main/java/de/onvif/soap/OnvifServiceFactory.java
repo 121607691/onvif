@@ -63,6 +63,13 @@ public class OnvifServiceFactory {
         if (serviceAddr != null) {
             instanceFactory.setAddress(serviceAddr);
         }
+        if (verbose) {
+            instanceFactory.getOutInterceptors().add(new LoggingOutInterceptor());
+            instanceFactory.getInInterceptors().add(new LoggingInInterceptor());
+        }
+        if (securityHandler != null) {
+            instanceFactory.getHandlers().add(securityHandler);
+        }
 
         return instanceFactory.create(serviceClass);
     }
@@ -86,17 +93,7 @@ public class OnvifServiceFactory {
 
         Client deviceClient = ClientProxy.getClient(servicePort);
 
-        if (verbose) {
-            // Enable SOAP message logging (for debugging/development only)
-            proxyFactory.getOutInterceptors().add(new LoggingOutInterceptor());
-            proxyFactory.getInInterceptors().add(new LoggingInInterceptor());
-        }
-
         HTTPConduit http = (HTTPConduit) deviceClient.getConduit();
-        if (securityHandler != null) {
-            proxyFactory.getHandlers().add(securityHandler);
-        }
-
         HTTPClientPolicy httpClientPolicy = http.getClient();
         httpClientPolicy.setConnectionTimeout(36000);
         httpClientPolicy.setReceiveTimeout(32000);
