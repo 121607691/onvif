@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OnvifServiceFactory {
     private static final Logger logger = LoggerFactory.getLogger(OnvifServiceFactory.class);
 
-        // Core: Cache parsed proxy factory configurations using Map
+    // Core: Cache parsed proxy factory configurations using Map
     private static final Map<String, JaxWsProxyFactoryBean> proxyCache = new ConcurrentHashMap<>();
 
     /**
@@ -52,7 +52,7 @@ public class OnvifServiceFactory {
         if (proxyFactory == null) {
             logger.debug("First-time creating service proxy {} - parsing and caching Schema", serviceClass.getSimpleName());
             // Parse Schema and cache on first creation
-            proxyFactory = createProxyFactory(servicePort, securityHandler, verbose);
+            proxyFactory = createProxyFactory(serviceClass, verbose);
             proxyCache.put(cacheKey, proxyFactory);
         } else {
             logger.debug("Reusing cached service proxy configuration {} - skipping Schema parsing", serviceClass.getSimpleName());
@@ -63,28 +63,27 @@ public class OnvifServiceFactory {
         if (serviceAddr != null) {
             instanceFactory.setAddress(serviceAddr);
         }
+        // Security handler is device-specific; attach per instance instead of caching in the template.
+        if (securityHandler != null) {
+            instanceFactory.getHandlers().add(securityHandler);
+        }
 
-        return instanceFactory.create(serviceClass);
+        T proxy = instanceFactory.create(serviceClass);
+        configureHttpConduit(proxy);
+        return proxy;
     }
 
     /**
      * Create basic configuration for proxy factory
      */
-    private static JaxWsProxyFactoryBean createProxyFactory(
-            BindingProvider servicePort,
-            SimpleSecurityHandler securityHandler,
-            boolean verbose) {
+    private static JaxWsProxyFactoryBean createProxyFactory(Class<?> serviceClass, boolean verbose) {
 
         JaxWsProxyFactoryBean proxyFactory = new JaxWsProxyFactoryBean();
-        proxyFactory.getHandlers();
-
-        proxyFactory.setServiceClass(servicePort.getClass());
+        proxyFactory.setServiceClass(serviceClass);
 
         SoapBindingConfiguration config = new SoapBindingConfiguration();
         config.setVersion(Soap12.getInstance());
         proxyFactory.setBindingConfig(config);
-
-        Client deviceClient = ClientProxy.getClient(servicePort);
 
         if (verbose) {
             // Enable SOAP message logging (for debugging/development only)
@@ -92,17 +91,20 @@ public class OnvifServiceFactory {
             proxyFactory.getInInterceptors().add(new LoggingInInterceptor());
         }
 
-        HTTPConduit http = (HTTPConduit) deviceClient.getConduit();
-        if (securityHandler != null) {
-            proxyFactory.getHandlers().add(securityHandler);
-        }
-
-        HTTPClientPolicy httpClientPolicy = http.getClient();
-        httpClientPolicy.setConnectionTimeout(36000);
-        httpClientPolicy.setReceiveTimeout(32000);
-        httpClientPolicy.setAllowChunking(false);
-
         return proxyFactory;
+    }
+
+    private static void configureHttpConduit(Object proxy) {
+        Client client = ClientProxy.getClient(proxy);
+        HTTPConduit http = (HTTPConduit) client.getConduit();
+        HTTPClientPolicy policy = http.getClient();
+        if (policy == null) {
+            policy = new HTTPClientPolicy();
+            http.setClient(policy);
+        }
+        policy.setConnectionTimeout(36000);
+        policy.setReceiveTimeout(32000);
+        policy.setAllowChunking(false);
     }
 
     /**
@@ -111,19 +113,18 @@ public class OnvifServiceFactory {
     private static JaxWsProxyFactoryBean cloneProxyFactory(JaxWsProxyFactoryBean original) {
         JaxWsProxyFactoryBean clone = new JaxWsProxyFactoryBean();
 
-                // Copy basic configuration
+        // Copy basic configuration
         clone.setServiceClass(original.getServiceClass());
         clone.setBindingConfig(original.getBindingConfig());
 
-        // Copy handlers
-        clone.getHandlers().addAll(original.getHandlers());
+        // Copy interceptors only; handlers are attached per proxy instance.
         clone.getInInterceptors().addAll(original.getInInterceptors());
         clone.getOutInterceptors().addAll(original.getOutInterceptors());
 
         return clone;
     }
 
-        /**
+    /**
      * Clear cache - recommended to call when application shuts down
      */
     public static void clearCache() {
