@@ -4,7 +4,6 @@ import jakarta.xml.soap.*;
 import jakarta.xml.ws.handler.MessageContext;
 import jakarta.xml.ws.handler.soap.SOAPHandler;
 import jakarta.xml.ws.handler.soap.SOAPMessageContext;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.namespace.QName;
 import java.security.MessageDigest;
@@ -13,12 +12,21 @@ import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.apache.wss4j.common.WSS4JConstants.*;
 
 /*
  Utility class to add user/password onvif credentials to SOAP communications
 */
 public class SimpleSecurityHandler implements SOAPHandler<SOAPMessageContext> {
+
+    // OASIS WS-Security 1.0 vocabulary used by ONVIF UsernameToken. Keeping the
+    // wire constants here avoids importing an unused XML-security runtime.
+    private static final String WSSE_NS = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
+    private static final String WSU_NS = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
+    private static final String WSSE_PREFIX = "wsse", WSU_PREFIX = "wsu";
+    private static final String WSSE_LN = "Security", USERNAME_TOKEN_LN = "UsernameToken", USERNAME_LN = "Username";
+    private static final String PASSWORD_LN = "Password", PASSWORD_TYPE_ATTR = "Type", NONCE_LN = "Nonce", CREATED_LN = "Created";
+    private static final String PASSWORD_DIGEST = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest";
+    private static final String BASE64_ENCODING = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary";
 
     private final String username;
     private final String password;
@@ -104,7 +112,7 @@ public class SimpleSecurityHandler implements SOAPHandler<SOAPMessageContext> {
 
                 SOAPElement nonceElem = usernameTokenElem.addChildElement(NONCE_LN, WSSE_PREFIX);
                 nonceElem.setAttribute("EncodingType", BASE64_ENCODING);
-                nonceElem.setTextContent(Base64.encodeBase64String(nonceBytes));
+                nonceElem.setTextContent(java.util.Base64.getEncoder().encodeToString(nonceBytes));
 
                 SOAPElement createdElem = usernameTokenElem.addChildElement(CREATED_LN, WSU_PREFIX);
                 createdElem.setTextContent(getLastUTCTime());

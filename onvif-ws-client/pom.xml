@@ -17,28 +17,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-transports-http-jetty</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-broker</artifactId>
-      <version>6.1.4</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.apache.wss4j</groupId>
-      <artifactId>wss4j-ws-security-common</artifactId>
-      <version>3.0.4</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.apache.cxf.services.wsn</groupId>
-      <artifactId>cxf-services-wsn-core</artifactId>
+      <artifactId>cxf-rt-transports-http</artifactId>
       <version>${cxf.version}</version>
     </dependency>
 
@@ -46,26 +25,14 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.17.0</version>
+      <version>3.22.0</version>
       <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.18.0</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.cxf.xjc-utils</groupId>
       <artifactId>cxf-xjc-runtime</artifactId>
-      <version>4.0.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model-builder</artifactId>
-      <version>3.9.9</version>
+      <version>${cxf.xjc.version}</version>
     </dependency>
 
   </dependencies>
@@ -75,7 +42,7 @@
       <plugin>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-codegen-plugin</artifactId>
-        <version>4.0.5</version>
+        <version>${cxf.version}</version>
         <executions>
           <execution>
             <id>generate-ws-stubs</id>
@@ -112,25 +79,19 @@
           <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-boolean</artifactId>
-            <version>4.0.2</version>
+            <version>${cxf.xjc.version}</version>
           </dependency>
           <!-- Boolean getters/setters -->
           <!-- ToString -->
           <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-ts</artifactId>
-            <version>4.0.2</version>
+            <version>${cxf.xjc.version}</version>
           </dependency>
           <dependency>
             <groupId>org.apache.cxf.xjc-utils</groupId>
             <artifactId>cxf-xjc-runtime</artifactId>
-            <version>${cxf.version}</version>
-          </dependency>
-
-          <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model-builder</artifactId>
-            <version>3.9.9</version>
+            <version>${cxf.xjc.version}</version>
           </dependency>
         </dependencies>
       </plugin>
